@@ -5,6 +5,11 @@ import * as config from '../../../config.json'
 import ContainerListView from '../../views/container/ContainerListView.jsx'
 import RaisedButton from 'material-ui/RaisedButton'
 import {Promise} from 'bluebird'
+import DataWaitLoader from '../../commons/DataWaitLoader.jsx'
+import Message from '../../commons/Message.jsx'
+import Confirm from '../../commons/Confirm.jsx'
+import Prompt from '../../commons/Prompt.jsx'
+import {TextField} from 'material-ui';
 
 export default class ContainerListController extends Component {
 
@@ -17,10 +22,12 @@ export default class ContainerListController extends Component {
             redirectTo: null,
             messageOpen: false,
             message: "",
+            confirmOpen: false,
+            confirmTitle: "",
+            confirmMessage: "",
             promptOpen: false,
             promptTitle: "",
-            prompt: "",
-            promptAction: <div />,
+            promptForm: "",
             scope: "false",
             filterText: "",
             completeList: [],
@@ -29,6 +36,7 @@ export default class ContainerListController extends Component {
         };
         this.handleScopeChangeEvent = this.handleScopeChangeEvent.bind(this);
         this.handleContainerInspectEvent = this.handleContainerInspectEvent.bind(this);
+        this.handleContainerCommitEvent = this.handleContainerCommitEvent.bind(this);
         this.handleContainerDeleteEvent = this.handleContainerDeleteEvent.bind(this);
         this.handleContainerCreateEvent = this.handleContainerCreateEvent.bind(this);
         this.handleContainerStartEvent = this.handleContainerStartEvent.bind(this);
@@ -97,6 +105,40 @@ export default class ContainerListController extends Component {
         this.setState({ redirectTo: "/containers/" + containerInfo.Id });
     }
 
+    handleContainerCommitEvent(containerInfo) {
+        var self = this;
+        return Promise
+            .resolve(containerInfo)
+            .then((c) => self.addPendingContainer(c))
+            .then(() => connection.getContainer(containerInfo.Id))
+            .then((c) => {
+                var tagName = "";
+                return new Promise((res, rej) => {
+                    this.setState({
+                        promptOpen: true,
+                        promptTitle: "Choose image name",
+                        promptForm: (
+                            <TextField hintText="Insert the Tag Name" onChange={(e) => tagName = e.target.value} />
+                        ),
+                        onPromptSubmit: () => res(c.commit({tagName: tagName})),
+                        onPromptCancel: () => rej({message: "Operation canceled"})
+                    });
+                })
+                .finally(() => {
+                    this.setState({
+                        promptOpen: false,
+                        promptTitle: "",
+                        onPromptSubmit: null,
+                        onPromptCancel: null
+                    }) 
+                });
+            })
+            .then(() => self.update())
+            .then(() => self.showMessage("Container \"" + containerInfo.Names[0].substring(1) + "\" committed succesfully"))
+            .catch((err) => self.showMessage(err.message))
+            .finally(() => self.removePendingContainer(containerInfo))
+    }
+
     handleContainerDeleteEvent(containerInfo) {
         var self = this;
         return Promise
@@ -110,23 +152,19 @@ export default class ContainerListController extends Component {
                     case "restarting":
                         return new Promise((res, rej) => {
                             this.setState({
-                                promptOpen: true,
-                                promptTitle: "Are you sure?",
-                                prompt: "This is a running container. The \"-f\" option will be used in order to delete it.",
-                                promptAction: (
-                                    <div>
-                                        <RaisedButton label="Cancel" onTouchTap={() => rej({message: "Operation canceled"})} />
-                                        &nbsp;
-                                        <RaisedButton label="Proceed" primary={true} onTouchTap={() => res(c.remove({force:true}))} />
-                                    </div>
-                                ),
+                                confirmOpen: true,
+                                confirmTitle: "Are you sure?",
+                                confirmMessage: "This is a running container. The \"-f\" option will be used in order to delete it.",
+                                onConfirmSubmit: () => res(c.remove({force: true})),
+                                onConfirmCancel: () => rej({message: "Operation canceled"})
                             });
                         }).finally(() => {
                             this.setState({
-                                promptOpen: false,
-                                promptTitle: "",
-                                prompt: "",
-                                promptAction: <div />
+                                confirmOpen: false,
+                                confirmTitle: "",
+                                confirmMessage: "",
+                                onConfirmSubmit: null,
+                                onConfirmCancel: null
                             }) 
                         });
                     default:
@@ -294,30 +332,41 @@ export default class ContainerListController extends Component {
             return <Redirect to={this.state.redirectTo} />;
         }
         return (
-            <ContainerListView
-                loaded={this.state.loaded}
-                error={this.state.error}
-                errorMessage={this.state.errorMessage}
-                data={this.state.list}
-                scope={this.state.scope}
-                messageOpen={this.state.messageOpen}
-                message={this.state.message}
-                promptOpen={this.state.promptOpen}
-                promptTitle={this.state.promptTitle}
-                prompt={this.state.prompt}
-                promptAction={this.state.promptAction}
-                onScopeChange={this.handleScopeChangeEvent}
-                onContainerInspect={this.handleContainerInspectEvent}
-                onContainerDelete={this.handleContainerDeleteEvent}
-                onContainerCreate={this.handleContainerCreateEvent}
-                onContainerStop={this.handleContainerStopEvent}
-                onContainerPause={this.handleContainerPauseEvent}
-                onContainerUnpause={this.handleContainerUnpauseEvent}
-                onContainerRestart={this.handleContainerRestartEvent}
-                onContainerStart={this.handleContainerStartEvent}
-                onFilter={this.handleFilterEvent}
-                onMessageClose={this.handleMessageCloseEvent}
-            />
+            <DataWaitLoader loaded={this.state.loaded} error={this.state.error} errorMessage={this.state.errorMessage} loadingMessage="Loading containers...">
+                <Message
+                    open={this.state.messageOpen}
+                    message={this.state.message}
+                    onClose={this.handleMessageCloseEvent}
+                />
+                <Confirm
+                    open={this.state.confirmOpen}
+                    title={this.state.confirmTitle}
+                    message={this.state.confirmMessage}
+                    onConfirm={this.state.onConfirmSubmit}
+                    onCancel={this.state.onConfirmCancel}
+                />
+                <Prompt
+                    open={this.state.promptOpen}
+                    title={this.state.promptTitle}
+                    onConfirm={this.state.onPromptSubmit}
+                    onCancel={this.state.onPromptCancel}
+                >{this.state.promptForm || <div />}</Prompt>
+                <ContainerListView
+                    data={this.state.list}
+                    scope={this.state.scope}
+                    onScopeChange={this.handleScopeChangeEvent}
+                    onContainerInspect={this.handleContainerInspectEvent}
+                    onContainerCommit={this.handleContainerCommitEvent}
+                    onContainerDelete={this.handleContainerDeleteEvent}
+                    onContainerCreate={this.handleContainerCreateEvent}
+                    onContainerStop={this.handleContainerStopEvent}
+                    onContainerPause={this.handleContainerPauseEvent}
+                    onContainerUnpause={this.handleContainerUnpauseEvent}
+                    onContainerRestart={this.handleContainerRestartEvent}
+                    onContainerStart={this.handleContainerStartEvent}
+                    onFilter={this.handleFilterEvent}
+                />
+            </DataWaitLoader>
         );
     }
 

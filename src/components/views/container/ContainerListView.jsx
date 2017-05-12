@@ -7,6 +7,7 @@ import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import InspectIcon from 'material-ui/svg-icons/action/search';
+import SaveIcon from 'material-ui/svg-icons/content/save';
 import AddCircleIcon from 'material-ui/svg-icons/content/add-circle';
 import PauseIcon from 'material-ui/svg-icons/av/pause';
 import StopIcon from 'material-ui/svg-icons/av/stop';
@@ -21,9 +22,7 @@ import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui
 import Subheader from 'material-ui/Subheader';
 import Divider from 'material-ui/Divider';
 import RefreshIndicator from 'material-ui/RefreshIndicator';
-import DataWaitLoader from '../../commons/DataWaitLoader.jsx';
 import {FloatingActionButton} from 'material-ui';
-import FeedbackElement from '../../commons/FeedbackElement.jsx';
 
 export default class ContainerListView extends Component {
 
@@ -35,6 +34,7 @@ export default class ContainerListView extends Component {
         }
         this.callScopeChangeHandler = this.callScopeChangeHandler.bind(this);
         this.callContainerInspectEventHandler = this.callContainerInspectEventHandler.bind(this);
+        this.callContainerCommitEventHandler = this.callContainerCommitEventHandler.bind(this);
         this.callContainerStartEventHandler = this.callContainerStartEventHandler.bind(this);
         this.callContainerStopEventHandler = this.callContainerStopEventHandler.bind(this);
         this.callContainerPauseEventHandler = this.callContainerPauseEventHandler.bind(this);
@@ -67,6 +67,10 @@ export default class ContainerListView extends Component {
 
     callContainerInspectEventHandler(container){
         this.props.onContainerInspect(container);
+    }
+
+    callContainerCommitEventHandler(container){
+        this.props.onContainerCommit(container);
     }
 
     callContainerStartEventHandler(container){
@@ -103,7 +107,7 @@ export default class ContainerListView extends Component {
 
     render() {
         return (
-            <DataWaitLoader loaded={this.props.loaded} error={this.props.error} errorMessage={this.props.errorMessage} loadingMessage="Loading containers...">
+            <div>
                 <Paper zDepth={2} style={{marginBottom: "120px"}}>
                     <Toolbar>
                         <ToolbarGroup firstChild={true}>
@@ -127,6 +131,7 @@ export default class ContainerListView extends Component {
                                     <ContainerTable 
                                         data={this.state.running}
                                         onContainerInspectClick={this.callContainerInspectEventHandler}
+                                        onContainerCommitClick={this.callContainerCommitEventHandler}
                                         onContainerStartClick={this.callContainerStartEventHandler}
                                         onContainerStopClick={this.callContainerStopEventHandler}
                                         onContainerPauseClick={this.callContainerPauseEventHandler}
@@ -154,6 +159,7 @@ export default class ContainerListView extends Component {
                                     <ContainerTable
                                         data={this.state.others}
                                         onContainerInspectClick={this.callContainerInspectEventHandler}
+                                        onContainerCommitClick={this.callContainerCommitEventHandler}
                                         onContainerStartClick={this.callContainerStartEventHandler}
                                         onContainerStopClick={this.callContainerStopEventHandler}
                                         onContainerPauseClick={this.callContainerPauseEventHandler}
@@ -173,19 +179,10 @@ export default class ContainerListView extends Component {
                         }
                     })()}
                 </Paper>
-                <FeedbackElement
-                    messageOpen={this.props.messageOpen}
-                    message={this.props.message}
-                    onMessageClose={this.callMessageCloseHandler}
-                    promptOpen={this.props.promptOpen}
-                    promptTitle={this.props.promptTitle}
-                    prompt={this.props.prompt}
-                    promptAction={this.props.promptAction}
-                />
                 <FloatingActionButton zDepth={2} style={{position:"fixed", bottom: "30px", right: "30px"}}>
                     <AddIcon />
                 </FloatingActionButton>
-            </DataWaitLoader>
+            </div>
         );
     }
 }
@@ -210,6 +207,7 @@ export class ContainerTable extends Component {
         };
 
         this.callContainerInspectClickEventHandler = this.callContainerInspectClickEventHandler.bind(this);
+        this.callContainerCommitClickEventHandler = this.callContainerCommitClickEventHandler.bind(this);
         this.callContainerStartClickEventHandler = this.callContainerStartClickEventHandler.bind(this);
         this.callContainerStopClickEventHandler = this.callContainerStopClickEventHandler.bind(this);
         this.callContainerPauseClickEventHandler = this.callContainerPauseClickEventHandler.bind(this);
@@ -220,6 +218,10 @@ export class ContainerTable extends Component {
 
     callContainerInspectClickEventHandler(container){
         this.props.onContainerInspectClick(container);
+    }
+
+    callContainerCommitClickEventHandler(container){
+        this.props.onContainerCommitClick(container);
     }
 
     callContainerStartClickEventHandler(container){
@@ -328,6 +330,11 @@ export class ContainerTable extends Component {
                                                 primaryText="Inspect"
                                                 leftIcon={<InspectIcon />}                                                                    
                                                 onTouchTap={() => this.callContainerInspectClickEventHandler(container)}
+                                            />
+                                            <MenuItem 
+                                                primaryText="Commit"
+                                                leftIcon={<SaveIcon />}                                                                    
+                                                onTouchTap={() => this.callContainerCommitClickEventHandler(container)}
                                             />
                                             <Divider />
                                             {(() => {

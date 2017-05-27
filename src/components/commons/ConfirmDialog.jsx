@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Dialog, Snackbar, RaisedButton} from 'material-ui';
+import {Dialog, RaisedButton} from 'material-ui';
 
 export default class FeedbackElement extends Component{
 

@@ -1,15 +1,15 @@
 import React, { Component } from 'react'
 import { Redirect } from 'react-router-dom'
-import connection from '../../../libs/connection.js'
-import * as config from '../../../config.json'
-import ContainerListView from '../../views/container/ContainerListView.jsx'
-import RaisedButton from 'material-ui/RaisedButton'
+import activeConnection from '../../stores/activeConnection.js';
+import config from '../../stores/config.js'
+import ContainerListView from './ContainerListView.jsx'
 import {Promise} from 'bluebird'
-import DataWaitLoader from '../../commons/DataWaitLoader.jsx'
-import Message from '../../commons/Message.jsx'
-import Confirm from '../../commons/Confirm.jsx'
-import Prompt from '../../commons/Prompt.jsx'
-import {TextField} from 'material-ui';
+import DataWaitLoader from '../commons/DataWaitLoader.jsx'
+import Message from '../commons/Message.jsx'
+import ConfirmDialog from '../commons/ConfirmDialog.jsx'
+import PromptDialog from '../commons/PromptDialog.jsx'
+import {TextField} from 'material-ui'
+import { Row, Col } from 'react-flexbox-grid'
 
 export default class ContainerListController extends Component {
 
@@ -50,7 +50,7 @@ export default class ContainerListController extends Component {
 
     componentDidMount() {
         var self = this;
-        setTimeout(() => self.update(), 2000);
+        setTimeout(() => self.update(), 0);
     }
 
     componentWillUnmount() {
@@ -62,7 +62,7 @@ export default class ContainerListController extends Component {
         var promise = this.loadContainers();
         this.timeout = setTimeout(
             () => this.update(),
-            config.updateInterval
+            config.get("updateInterval")
         );
         return promise;
     }
@@ -71,7 +71,7 @@ export default class ContainerListController extends Component {
         var self = this;
         return Promise
             .resolve({all: self.state.scope || "false"})
-            .then((d) => connection.listContainers(d))
+            .then((d) => activeConnection.connection.listContainers(d))
             .then((containers) => {
                 console.debug(containers);
                 return new Promise((res) => {
@@ -110,17 +110,25 @@ export default class ContainerListController extends Component {
         return Promise
             .resolve(containerInfo)
             .then((c) => self.addPendingContainer(c))
-            .then(() => connection.getContainer(containerInfo.Id))
+            .then(() => activeConnection.connection.getContainer(containerInfo.Id))
             .then((c) => {
-                var tagName = "";
+                var repo = "";
+                var tag = "";
                 return new Promise((res, rej) => {
                     this.setState({
                         promptOpen: true,
-                        promptTitle: "Choose image name",
+                        promptTitle: "Commit Container",
                         promptForm: (
-                            <TextField hintText="Insert the Tag Name" onChange={(e) => tagName = e.target.value} />
+                                <Row>
+                                    <Col xs={8}>
+                                        <TextField hintText="Insert Repository Name" fullWidth={true} onChange={(e) => repo = e.target.value} />
+                                    </Col>
+                                    <Col xs={4}>
+                                        <TextField hintText="Insert Tag" fullWidth={true} onChange={(e) => tag = e.target.value} />
+                                    </Col>
+                                </Row>
                         ),
-                        onPromptSubmit: () => res(c.commit({tagName: tagName})),
+                        onPromptSubmit: () => res(c.commit({repo: repo, tag: tag})),
                         onPromptCancel: () => rej({message: "Operation canceled"})
                     });
                 })
@@ -144,7 +152,7 @@ export default class ContainerListController extends Component {
         return Promise
             .resolve(containerInfo)
             .then((c) => self.addPendingContainer(c))
-            .then(() => connection.getContainer(containerInfo.Id))
+            .then(() => activeConnection.connection.getContainer(containerInfo.Id))
             .then((c) => {
                 switch(containerInfo.State){
                     case "running":
@@ -187,7 +195,7 @@ export default class ContainerListController extends Component {
         return Promise
             .resolve(containerInfo)
             .then((c) => self.addPendingContainer(c))
-            .then(() => connection.getContainer(containerInfo.Id))
+            .then(() => activeConnection.connection.getContainer(containerInfo.Id))
             .then((c) => c.start())
             .then(() => self.update())
             .then(() => self.showMessage("Container \"" + containerInfo.Names[0].substring(1) + "\" started succesfully"))
@@ -200,7 +208,7 @@ export default class ContainerListController extends Component {
         return Promise
             .resolve(containerInfo)
             .then((c) => self.addPendingContainer(c))
-            .then(() => connection.getContainer(containerInfo.Id))
+            .then(() => activeConnection.connection.getContainer(containerInfo.Id))
             .then((c) => c.stop())
             .then(() => self.update())
             .then(() => self.showMessage("Container \"" + containerInfo.Names[0].substring(1) + "\" stopped succesfully"))
@@ -213,7 +221,7 @@ export default class ContainerListController extends Component {
         return Promise
             .resolve(containerInfo)
             .then((c) => self.addPendingContainer(c))
-            .then(() => connection.getContainer(containerInfo.Id))
+            .then(() => activeConnection.connection.getContainer(containerInfo.Id))
             .then((c) => c.pause())
             .then(() => self.update())
             .then(() => self.showMessage("Container \"" + containerInfo.Names[0].substring(1) + "\" paused succesfully"))
@@ -226,7 +234,7 @@ export default class ContainerListController extends Component {
         return Promise
             .resolve(containerInfo)
             .then((c) => self.addPendingContainer(c))
-            .then(() => connection.getContainer(containerInfo.Id))
+            .then(() => activeConnection.connection.getContainer(containerInfo.Id))
             .then((c) => c.unpause())
             .then(() => self.update())
             .then(() => self.showMessage("Container \"" + containerInfo.Names[0].substring(1) + "\" unpaused succesfully"))
@@ -239,7 +247,7 @@ export default class ContainerListController extends Component {
         return Promise
             .resolve(containerInfo)
             .then((c) => self.addPendingContainer(c))
-            .then(() => connection.getContainer(containerInfo.Id))
+            .then(() => activeConnection.connection.getContainer(containerInfo.Id))
             .then((c) => c.restart())
             .then(() => self.update())
             .then(() => self.showMessage("Container \"" + containerInfo.Names[0].substring(1) + "\" restarted succesfully"))
@@ -255,7 +263,7 @@ export default class ContainerListController extends Component {
                 filterText: filterText,
                 list: self.getFinalList(self.state.completeList, filterText, self.state.pendingList)
             });
-        }, config.inputTypeChangeDelay);
+        }, config.get("inputTypeChangeDelay"));
     }
 
     handleMessageCloseEvent(){
@@ -338,19 +346,19 @@ export default class ContainerListController extends Component {
                     message={this.state.message}
                     onClose={this.handleMessageCloseEvent}
                 />
-                <Confirm
+                <ConfirmDialog
                     open={this.state.confirmOpen}
                     title={this.state.confirmTitle}
                     message={this.state.confirmMessage}
                     onConfirm={this.state.onConfirmSubmit}
                     onCancel={this.state.onConfirmCancel}
                 />
-                <Prompt
+                <PromptDialog
                     open={this.state.promptOpen}
                     title={this.state.promptTitle}
                     onConfirm={this.state.onPromptSubmit}
                     onCancel={this.state.onPromptCancel}
-                >{this.state.promptForm || <div />}</Prompt>
+                >{this.state.promptForm || <div />}</PromptDialog>
                 <ContainerListView
                     data={this.state.list}
                     scope={this.state.scope}

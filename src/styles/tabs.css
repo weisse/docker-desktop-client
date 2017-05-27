@@ -1,0 +1,6 @@
+.etabs-tab.active{
+    background-color: #eee!important;
+}
+.etabs-tab.visible:not(.active){
+    background: #ccc!important;
+}

@@ -4,12 +4,8 @@ import AppBar from 'material-ui/AppBar'
 import Drawer from 'material-ui/Drawer'
 import Menu from 'material-ui/Menu'
 import MenuItem from 'material-ui/MenuItem'
-import ArrowBack from 'material-ui/svg-icons/navigation/arrow-back'
-import ArrowForward from 'material-ui/svg-icons/navigation/arrow-forward'
-import {ToolbarGroup, Toolbar, FlatButton} from 'material-ui'
-import { Grid, Row, Col } from 'react-flexbox-grid'
 
-class MainComponent extends Component{
+class AppLayout extends Component{
 
     constructor(){
         super();
@@ -54,4 +50,4 @@ class MainComponent extends Component{
     }
 }
 
-export default MainComponent;
+export default AppLayout;

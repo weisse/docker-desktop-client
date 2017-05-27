@@ -1,4 +1,5 @@
 {
     "updateInterval": 5000,
-    "inputTypeChangeDelay": 300
+    "inputTypeChangeDelay": 300,
+    "connections":[]
 }

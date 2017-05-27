@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 import TextField from 'material-ui/TextField'
-import { green500, orange500, grey400 } from 'material-ui/styles/colors'
 import Paper from 'material-ui/Paper'
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
@@ -23,6 +22,7 @@ import Subheader from 'material-ui/Subheader';
 import Divider from 'material-ui/Divider';
 import RefreshIndicator from 'material-ui/RefreshIndicator';
 import {FloatingActionButton} from 'material-ui';
+import ContainerState from '../commons/ContainerState.jsx'
 
 export default class ContainerListView extends Component {
 
@@ -33,16 +33,6 @@ export default class ContainerListView extends Component {
             others: []
         }
         this.callScopeChangeHandler = this.callScopeChangeHandler.bind(this);
-        this.callContainerInspectEventHandler = this.callContainerInspectEventHandler.bind(this);
-        this.callContainerCommitEventHandler = this.callContainerCommitEventHandler.bind(this);
-        this.callContainerStartEventHandler = this.callContainerStartEventHandler.bind(this);
-        this.callContainerStopEventHandler = this.callContainerStopEventHandler.bind(this);
-        this.callContainerPauseEventHandler = this.callContainerPauseEventHandler.bind(this);
-        this.callContainerUnpauseEventHandler = this.callContainerUnpauseEventHandler.bind(this);
-        this.callContainerRestartEventHandler = this.callContainerRestartEventHandler.bind(this);
-        this.callContainerDeleteEventHandler = this.callContainerDeleteEventHandler.bind(this);
-        this.callFilterEventHandler = this.callFilterEventHandler.bind(this);
-        this.callMessageCloseHandler = this.callMessageCloseHandler.bind(this);
     }
 
     componentDidMount() {
@@ -65,46 +55,6 @@ export default class ContainerListView extends Component {
         this.props.onScopeChange(scope);
     }
 
-    callContainerInspectEventHandler(container){
-        this.props.onContainerInspect(container);
-    }
-
-    callContainerCommitEventHandler(container){
-        this.props.onContainerCommit(container);
-    }
-
-    callContainerStartEventHandler(container){
-        this.props.onContainerStart(container);
-    }
-
-    callContainerStopEventHandler(container){
-        this.props.onContainerStop(container);
-    }
-
-    callContainerPauseEventHandler(container){
-        this.props.onContainerPause(container);
-    }
-
-    callContainerUnpauseEventHandler(container){
-        this.props.onContainerUnpause(container);
-    }
-
-    callContainerRestartEventHandler(container){
-        this.props.onContainerRestart(container);
-    }
-
-    callContainerDeleteEventHandler(container){
-        this.props.onContainerDelete(container);
-    }
-
-    callFilterEventHandler(string){
-        this.props.onFilter(string);
-    }
-
-    callMessageCloseHandler(){
-        this.props.onMessageClose();
-    }
-
     render() {
         return (
             <div>
@@ -118,7 +68,7 @@ export default class ContainerListView extends Component {
                             </ToolbarGroup>
                             <ToolbarGroup>
                             <ToolbarTitle text="Filter" />
-                            <TextField hintText="Type a regepx" onChange={(e) => this.callFilterEventHandler(e.target.value)} />
+                            <TextField hintText="Type a regepx" onChange={(e) => this.props.onFilter(e.target.value)} />
                             <ToolbarSeparator />
                             <RaisedButton label="Create new container" icon={<AddCircleIcon />} primary={true} />
                         </ToolbarGroup>
@@ -130,14 +80,14 @@ export default class ContainerListView extends Component {
                                 <div>
                                     <ContainerTable 
                                         data={this.state.running}
-                                        onContainerInspectClick={this.callContainerInspectEventHandler}
-                                        onContainerCommitClick={this.callContainerCommitEventHandler}
-                                        onContainerStartClick={this.callContainerStartEventHandler}
-                                        onContainerStopClick={this.callContainerStopEventHandler}
-                                        onContainerPauseClick={this.callContainerPauseEventHandler}
-                                        onContainerUnpauseClick={this.callContainerUnpauseEventHandler}
-                                        onContainerRestartClick={this.callContainerRestartEventHandler}
-                                        onContainerDeleteClick={this.callContainerDeleteEventHandler}
+                                        onContainerInspectClick={this.props.onContainerInspect}
+                                        onContainerCommitClick={this.props.onContainerCommit}
+                                        onContainerStartClick={this.props.onContainerStart}
+                                        onContainerStopClick={this.props.onContainerStop}
+                                        onContainerPauseClick={this.props.onContainerPause}
+                                        onContainerUnpauseClick={this.props.onContainerUnpause}
+                                        onContainerRestartClick={this.props.onContainerRestart}
+                                        onContainerDeleteClick={this.props.onContainerDelete}
                                     />
                                 </div>
                             );
@@ -158,14 +108,14 @@ export default class ContainerListView extends Component {
                                 <div>
                                     <ContainerTable
                                         data={this.state.others}
-                                        onContainerInspectClick={this.callContainerInspectEventHandler}
-                                        onContainerCommitClick={this.callContainerCommitEventHandler}
-                                        onContainerStartClick={this.callContainerStartEventHandler}
-                                        onContainerStopClick={this.callContainerStopEventHandler}
-                                        onContainerPauseClick={this.callContainerPauseEventHandler}
-                                        onContainerUnpauseClick={this.callContainerUnpauseEventHandler}
-                                        onContainerRestartClick={this.callContainerRestartEventHandler}
-                                        onContainerDeleteClick={this.callContainerDeleteEventHandler}
+                                        onContainerInspectClick={this.props.onContainerInspect}
+                                        onContainerCommitClick={this.props.onContainerCommit}
+                                        onContainerStartClick={this.props.onContainerStart}
+                                        onContainerStopClick={this.props.onContainerStop}
+                                        onContainerPauseClick={this.props.onContainerPause}
+                                        onContainerUnpauseClick={this.props.onContainerUnpause}
+                                        onContainerRestartClick={this.props.onContainerRestart}
+                                        onContainerDeleteClick={this.props.onContainerDelete}
                                     />
                                 </div>
                             );
@@ -206,46 +156,6 @@ export class ContainerTable extends Component {
             showCheckboxes: false
         };
 
-        this.callContainerInspectClickEventHandler = this.callContainerInspectClickEventHandler.bind(this);
-        this.callContainerCommitClickEventHandler = this.callContainerCommitClickEventHandler.bind(this);
-        this.callContainerStartClickEventHandler = this.callContainerStartClickEventHandler.bind(this);
-        this.callContainerStopClickEventHandler = this.callContainerStopClickEventHandler.bind(this);
-        this.callContainerPauseClickEventHandler = this.callContainerPauseClickEventHandler.bind(this);
-        this.callContainerUnpauseClickEventHandler = this.callContainerUnpauseClickEventHandler.bind(this);
-        this.callContainerRestartClickEventHandler = this.callContainerRestartClickEventHandler.bind(this);
-        this.callContainerDeleteClickEventHandler = this.callContainerDeleteClickEventHandler.bind(this);
-    }
-
-    callContainerInspectClickEventHandler(container){
-        this.props.onContainerInspectClick(container);
-    }
-
-    callContainerCommitClickEventHandler(container){
-        this.props.onContainerCommitClick(container);
-    }
-
-    callContainerStartClickEventHandler(container){
-        this.props.onContainerStartClick(container);
-    }
-
-    callContainerStopClickEventHandler(container){
-        this.props.onContainerStopClick(container);
-    }
-
-    callContainerPauseClickEventHandler(container){
-        this.props.onContainerPauseClick(container);
-    }
-
-    callContainerUnpauseClickEventHandler(container){
-        this.props.onContainerUnpauseClick(container);
-    }
-
-    callContainerRestartClickEventHandler(container){
-        this.props.onContainerRestartClick(container);
-    }
-
-    callContainerDeleteClickEventHandler(container){
-        this.props.onContainerDeleteClick(container);
     }
 
     render() {
@@ -279,20 +189,7 @@ export class ContainerTable extends Component {
                     {this.props.data.map((container, index) => (
                         <TableRow key={index} selected={container.selected}>
                             <TableRowColumn style={{ width: "10px" }}>
-                                {(() => {
-                                    switch(container.State){
-                                        case "running":
-                                            return <PlayIcon color={green500} />
-                                        case "stopped":
-                                            return <StopIcon color={orange500} />
-                                        case "paused":
-                                            return <PauseIcon color={orange500} />
-                                        case "restarting":
-                                            return <RestartIcon color={orange500} />
-                                        default:
-                                            return <StopIcon color={grey400} />
-                                    }
-                                })()}
+                                <ContainerState state={container.State} />
                             </TableRowColumn>
                             <TableRowColumn>
                                 {container.Id}
@@ -329,12 +226,12 @@ export class ContainerTable extends Component {
                                             <MenuItem 
                                                 primaryText="Inspect"
                                                 leftIcon={<InspectIcon />}                                                                    
-                                                onTouchTap={() => this.callContainerInspectClickEventHandler(container)}
+                                                onTouchTap={() => this.props.onContainerInspectClick(container)}
                                             />
                                             <MenuItem 
                                                 primaryText="Commit"
                                                 leftIcon={<SaveIcon />}                                                                    
-                                                onTouchTap={() => this.callContainerCommitClickEventHandler(container)}
+                                                onTouchTap={() => this.props.onContainerCommitClick(container)}
                                             />
                                             <Divider />
                                             {(() => {
@@ -345,17 +242,17 @@ export class ContainerTable extends Component {
                                                                 <MenuItem 
                                                                     primaryText="Stop"
                                                                     leftIcon={<StopIcon />}                                                                    
-                                                                    onTouchTap={() => this.callContainerStopClickEventHandler(container)}
+                                                                    onTouchTap={() => this.props.onContainerStopClick(container)}
                                                                 />
                                                                 <MenuItem 
                                                                     primaryText="Pause"
                                                                     leftIcon={<PauseIcon />}
-                                                                    onTouchTap={() => this.callContainerPauseClickEventHandler(container)}
+                                                                    onTouchTap={() => this.props.onContainerPauseClick(container)}
                                                                 />
                                                                 <MenuItem
                                                                     primaryText="Restart"
                                                                     leftIcon={<RestartIcon />}
-                                                                    onTouchTap={() => this.callContainerRestartClickEventHandler(container)}
+                                                                    onTouchTap={() => this.props.onContainerRestartClick(container)}
                                                                 />
                                                                 <Divider />
                                                             </div>
@@ -368,7 +265,7 @@ export class ContainerTable extends Component {
                                                                 <MenuItem 
                                                                     primaryText="Unpause"
                                                                     leftIcon={<PlayIcon />}
-                                                                    onTouchTap={() => this.callContainerUnpauseClickEventHandler(container)}
+                                                                    onTouchTap={() => this.props.onContainerUnpauseClick(container)}
                                                                 />
                                                                 <Divider />
                                                             </div>
@@ -379,7 +276,7 @@ export class ContainerTable extends Component {
                                                                 <MenuItem 
                                                                     primaryText="Start"
                                                                     leftIcon={<PlayIcon />}
-                                                                    onTouchTap={() => this.callContainerStartClickEventHandler(container)}
+                                                                    onTouchTap={() => this.props.onContainerStartClick(container)}
                                                                 />
                                                                 <Divider />
                                                             </div>
@@ -389,7 +286,7 @@ export class ContainerTable extends Component {
                                             <MenuItem 
                                                 primaryText="Delete"
                                                 leftIcon={<DeleteIcon />}
-                                                onTouchTap={() => this.callContainerDeleteClickEventHandler(container)}
+                                                onTouchTap={() => this.props.onContainerDeleteClick(container)}
                                             />
                                         </IconMenu>
                                     );

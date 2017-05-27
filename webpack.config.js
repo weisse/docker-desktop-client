@@ -43,17 +43,16 @@ const config = {
     module: {
         rules: [
             {test: /\.jsx?$/, use: "babel-loader"},
-            {test: /\.tsx?$/, loader: "awesome-typescript-loader" },
-            {enforce: "pre", test: /\.js$/, loader: "source-map-loader"},
+            {test: /\.tsx?$/, use: "awesome-typescript-loader" },
+            {enforce: "pre", test: /\.js$/, use: "source-map-loader"},
             {
                 test: /\.css$/,
-                loader: "style-loader!css-loader",
-                include: /flexboxgrid/
+                use: ["style-loader","css-loader"]
             },
             {test: /\.json$/, use: "json-loader"},
             {
                 test: /node_modules\/JSONStream\/index\.js$/,
-                loaders: ['shebang-loader', 'babel-loader']
+                use: ['shebang-loader', 'babel-loader']
             }
         ]
     },
@@ -71,6 +70,10 @@ const config = {
         new WebpackChunkHash(),
         new HtmlWebpackPlugin({
             template: 'src/index.ejs'
+        }),
+        new HtmlWebpackPlugin({
+            filename: 'application.html',
+            template: 'src/application.ejs'
         }),
         new InlineManifestWebpackPlugin({
             name: 'webpackManifest'
